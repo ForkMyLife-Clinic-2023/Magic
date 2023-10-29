@@ -23,6 +23,7 @@ jobs:
       uses: abatilo/actions-poetry@v2
     - name: Install dependencies
       run: |
+        poetry config virtualenvs.create false
         poetry install
     - name: Lint with flake8
       run: |
