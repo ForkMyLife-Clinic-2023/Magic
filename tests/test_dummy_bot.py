@@ -11,5 +11,5 @@ async def test_start_handler():
     message_mock = AsyncMock()
     await command_start_handler(message=message_mock)
     message_mock.answer.assert_called_with(
-        f"Hello, {hbold(message_mock.from_user.full_name)}!"
+        f"Hello, {hbold(message_mock.from_user.full_name)}!\nTo open the menu, type /menu"
     )
