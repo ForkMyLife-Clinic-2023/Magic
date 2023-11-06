@@ -19,7 +19,7 @@ dp = Dispatcher()
 
 
 class OperatingBot(StatesGroup):
-    chose_company = State()
+    choose_company = State()
 
 
 class CompaniesCallbackFactory(CallbackData, prefix="company"):
@@ -72,17 +72,9 @@ async def callbacks_switch_domen(
     callback_data: CompaniesCallbackFactory,
     state: FSMContext,
 ):
-    match callback_data.name:
-        case "Рога и копыта":
-            await callback.message.answer("switching domen to 'Рога и копыта'")
-            await state.update_data(chosen_company="Рога и копыта")
-        case "Биба и Боба":
-            await callback.message.answer("switching domen to 'Биба и Боба'")
-            await state.update_data(chosen_company="Биба и Боба")
-        case "Лёлик и Болик":
-            await callback.message.answer("switching domen to 'Лёлик и Болик'")
-            await state.update_data(chosen_company="Лёлик и Болик")
-    await state.set_state(OperatingBot.chose_company)
+    await callback.message.answer("switching domen to '{}'".format(callback_data.name))
+    await state.update_data(chosen_company=callback_data.name)
+    await state.set_state(OperatingBot.choose_company)
     await callback.answer()
 
 
@@ -94,7 +86,7 @@ async def echo_handler(message: types.Message, state: FSMContext) -> None:
         message (types.Message): Any type of message
     """
     cur_state = await state.get_state()
-    if cur_state == "OperatingBot:chose_company":
+    if cur_state == "OperatingBot:choose_company":
         data = await state.get_data()
         await message.reply("{}: {}".format(data["chosen_company"], message.text))
     else:
