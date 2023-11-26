@@ -30,6 +30,7 @@ class LLMClient:
     def _generate_prompt(
         self,
         chosen_company: str,
+        chosen_type: str,
         user_query: str,
     ) -> List[Dict]:
         """Generate prompt to LLM with instruction (role: system)
@@ -37,6 +38,7 @@ class LLMClient:
 
         Args:
             chosen_company (str): Name of company chosen by user.
+            chosen_type (str): Type of company chosen by user.
             user_query (str): User message to LLM
 
         Returns:
@@ -45,7 +47,10 @@ class LLMClient:
         prompt = []
         if len(self._history) == 0:
             personalized_instruction = MODEL_INSTRUCTION.replace(
-                "__COMPANY__", chosen_company
+                "__COMPANY_NAME__", chosen_company
+            )
+            personalized_instruction = MODEL_INSTRUCTION.replace(
+                "__COMPANY_TYPE__", chosen_type
             )
             prompt.append(
                 {
@@ -69,20 +74,22 @@ class LLMClient:
         )
         return prompt
 
-    async def request_model(self, chosen_company: str, user_query: str) -> ModelMessage:
+    async def request_model(self, chosen_company: str, chosen_type: str, user_query: str) -> ModelMessage:
         """Send request to LLM.
 
         Args:
             chosed_company (str): Name of company chosen by user.
-            query (str): User message to LLM.
+            chosen_type (str): Type of company chosen by user.
+            user_query (str): User message to LLM.
 
         Returns:
             ModelMessage: Object with role and content from model response.
         """
         logger.info(
-            f"Service recieved user's query for company {chosen_company}: {user_query}"
+            f"Service recieved user's query for {chosen_type} {chosen_company}: {user_query}"
         )
         prompt = self._generate_prompt(
+            chosen_type=chosen_type,
             chosen_company=chosen_company,
             user_query=user_query,
         )
