@@ -111,8 +111,11 @@ async def echo_handler(message: types.Message, state: FSMContext) -> None:
 async def end_call(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     responce = await data['modelClient'].request_model(data['chosen_company'], data['chosen_type'], '[call_ends]')
+    content = str(responce.content).split('\n',1)
+    score = content[0]
+    text = content[1]
     await callback.message.answer(
-        text=responce.content
+        text=f"Оценка: {score}\nСаммари: {text}"
         )
     await state.clear()
     await callback.message.edit_reply_markup(reply_markup=None) 
