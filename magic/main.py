@@ -32,6 +32,12 @@ builder = InlineKeyboardBuilder()
 builder.row(types.InlineKeyboardButton(
     text="End call", callback_data='[call_ends]')
 )
+end_call_builder = InlineKeyboardBuilder()
+end_call_builder.row(types.InlineKeyboardButton(
+    text="New call", callback_data='[new_call]'),
+    types.InlineKeyboardButton(
+    text="New company", callback_data='[new_company]')
+)
 # @dp.message(CommandStart())
 # async def command_start_handler(message: Message) -> None:
 #     """This handler receives messages with `/start` command
@@ -114,10 +120,37 @@ async def end_call(callback: types.CallbackQuery, state: FSMContext):
     content = str(responce.content).split('\n',1)
     score = content[0]
     text = content[1]
-    await callback.message.answer(
-        text=f"Оценка: {score}\nСаммари: {text}"
+    await callback.message.edit_reply_markup(reply_markup=None) 
+    await state.update_data(last_bot_message=await callback.message.answer(
+        text=f"Оценка: {score}\nСаммари: {text}",
+        reply_markup=end_call_builder.as_markup())
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == '[new_call]')
+async def new_call(callback: types.CallbackQuery, state: FSMContext):
+    await state.update_data(modelClient=LLMClient('GigaR:500k-exp', ClientSession()))
+    data = await state.get_data()
+    await state.update_data(last_bot_message=await callback.message.answer(
+        text=STARTING_MESSAGE.replace(
+                "__COMPANY_NAME__", data['chosen_company']
+            ).replace(
+                "__COMPANY_TYPE__", data['chosen_type']
+            ),
+        reply_markup=builder.as_markup()
         )
-    await state.clear()
+    )
+    await state.set_state(SetupConf.ready)
+    await callback.message.edit_reply_markup(reply_markup=None) 
+    await callback.answer()
+
+@dp.callback_query(F.data == '[new_company]')
+async def new_company(callback: types.CallbackQuery, state: FSMContext):
+    state.clear()
+    await callback.message.answer(
+    text="Company: "
+    )
+    await state.set_state(SetupConf.choosing_company)
     await callback.message.edit_reply_markup(reply_markup=None) 
     await callback.answer()
 
