@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 from aiohttp.client import ClientSession, ClientTimeout
-from config import (MAX_TOKENS, MODEL_INSTRUCTION, MODEL_SERVER_URL,
+from model_client.config import (MAX_TOKENS, MODEL_INSTRUCTION, MODEL_SERVER_URL,
                     REPETITION_PENALTY, TEMPERATURE, TIMEOUT)
 
 logger = logging.getLogger("LLM client")
@@ -21,11 +21,15 @@ class LLMClient:
         self._client = client
         self._history = []
 
+    def __del__(self):
+        self._client.close()
+
     def _update_history(
         self, prompt: List[ModelMessage], response: ModelMessage
     ) -> None:
         prompt.append(response)
         self._history = prompt.copy()
+        print(self._history)
 
     def _generate_prompt(
         self,
@@ -49,7 +53,7 @@ class LLMClient:
             personalized_instruction = MODEL_INSTRUCTION.replace(
                 "__COMPANY_NAME__", chosen_company
             )
-            personalized_instruction = MODEL_INSTRUCTION.replace(
+            personalized_instruction = personalized_instruction.replace(
                 "__COMPANY_TYPE__", chosen_type
             )
             prompt.append(
@@ -62,8 +66,8 @@ class LLMClient:
             for message in self._history:
                 prompt.append(
                     {
-                        "role": message.role,
-                        "content": message.content,
+                        "role": message['role'],
+                        "content": message['content'],
                     }
                 )
         prompt.append(
@@ -108,11 +112,9 @@ class LLMClient:
         data = await response.json()
         logger.info(f"Recieved data: {data=}")
         message = data["choices"][0]["message"]
+        self._update_history(prompt=prompt, response=message)
         message = ModelMessage(
             role=message["role"],
             content=message["content"],
         )
-
-        self._update_history(prompt=prompt, response=message)
-
         return message
