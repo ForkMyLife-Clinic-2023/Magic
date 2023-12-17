@@ -29,7 +29,7 @@ class LLMClient:
     ) -> None:
         prompt.append(response)
         self._history = prompt.copy()
-        print(self._history)
+        #print(self._history)
 
     def _generate_prompt(
         self,
@@ -97,6 +97,7 @@ class LLMClient:
             chosen_company=chosen_company,
             user_query=user_query,
         )
+        logger.info(f"Posted data: {prompt=}")
         response = await self._client.post(
             url=MODEL_SERVER_URL,
             json=dict(
