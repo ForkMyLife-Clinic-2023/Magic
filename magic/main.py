@@ -56,7 +56,7 @@ async def command_config(message: Message, state: FSMContext) -> None:
 
 @dp.message(Command("start"))
 async def command_config(message: Message, state: FSMContext) -> None:
-    state.clear()
+    await state.clear()
     await message.answer(
     text="Company: "
     )
@@ -146,7 +146,7 @@ async def new_call(callback: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == '[new_company]')
 async def new_company(callback: types.CallbackQuery, state: FSMContext):
-    state.clear()
+    await state.clear()
     await callback.message.answer(
     text="Company: "
     )
