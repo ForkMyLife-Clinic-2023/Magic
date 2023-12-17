@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 aiogram = "^3.1.1"
+aiohttp = "^3.8.6"
 
 [tool.poetry.group.lint.dependencies]
 isort = "^5.12.0"
